@@ -1,117 +1,97 @@
-# pinyin-tone
+# pinyin-tone2
 
-A lightweight library to algorithmically convert numerical tone notation (e.g., hao3) to standard Pinyin diacritical marks (e.g., hǎo).
+Convert between numbered pinyin and diacritic pinyin, in both directions.
 
-Designed for developers and learners who need accurate tone mark formatting in language apps, input methods, or educational tools.
+```
+huar1  ⟺  huār
+chu1 yin1 wei4 lai2  ⟺  chū yīn wèi lái
+```
 
-## Setup
-
-[![NPM](https://nodei.co/npm/pinyin-tone.png)](https://nodei.co/npm/pinyin-tone/)
-
-### Installation via npm:
-
-通过NPM安装：
+## Installation
 
 ```bash
-npm install pinyin-tone
+npm install pinyin-tone2
 ```
 
-## Usage (Default Behavior)
+## API
 
-This module exports a function. You can name it as desired, such as `pinyin`.
+All exports are named except the default, which is `toPinyinTones`.
 
-```javascript
-// CommonJS usage (up to version 2.2.7)
-var toPinyinTones = require('pinyin-tone');
-
-// /* or ES Module usage (breaking change in version 2.3.0+) */
-// import toPinyinTones from 'pinyin-tone';
-
-// Examples
-var hatsune_miku = toPinyinTones('chu1 yin1 wei4 lai2'); // -> 'chū yīn wèi lái'
-var megurine_luka = toPinyinTones("xun2 yin1 liu2 ge1"); // -> 'xún yīn liú gē'
-var han = toPinyinTones("han4 yu3 pin1 yin1 fang1 an4"); // -> 'hàn yǔ pīn yīn fāng àn'
-
-// Erhua / 儿化音 (ér huà yīn)
-var huar = toPinyinTones("huar1 renr2 shuir3 yuer4"); // -> 'huār rénr shuǐr yuèr'
-
-// Initials / 声母 (shēng mǔ)
-var bpmf = toPinyinTones("b p m f"); // -> 'b p m f'
-
-// Finals / 韵母 (yùn mǔ)
-var yun = toPinyinTones("an1 vn2 ong3 uen4"); // -> 'ān ǘn ǒng uèn'
-
-// Special cases
-var liuyun = toPinyinTones("liou2 yuen2"); // -> (only in v2) 'lióu yuén'
-var iou_uen = toPinyinTones("iou1 uen4"); // -> 'iōu uèn' (pure final only)
-
-// Some less common combinations
-var fantastic = toPinyinTones("bong1 tv2 pe3 wir4"); // -> 'bōng tǘ pě wìr'
+```js
+import toPinyinTones, {
+    fromPinyinTones,
+    splitUnspacedSyllables,
+    convertUnspacedPinyin,
+    markSinglePinyinVowel,
+} from 'pinyin-tone2';
 ```
 
-## Usage v2 (Exprimental)
+### `toPinyinTones(input, options?)` — numbered → diacritics
 
-There is one key difference between `v1` and `v2`:
+```js
+toPinyinTones('chu1 yin1 wei4 lai2')        // → 'chū yīn wèi lái'
+toPinyinTones('xun2 yin1 liu2 ge1')         // → 'xún yīn liú gē'
+toPinyinTones('an1 vn2 ong3 uen4')          // → 'ān ǘn ǒng uèn'
+toPinyinTones('b p m f')                    // → 'b p m f'
 
-v2 does not support the format `pinyin-number-r` (e.g., `hua1r`) for erhua pronunciation.
+// Erhua — r-number format (default)
+toPinyinTones('huar1 renr2 shuir3 yuer4')   // → 'huār rénr shuǐr yuèr'
 
-Instead, it supports the format `pinyin-r-number`, such as `huar1`.
-
-```javascript
-// CommonJS usage (up to version 2.2.7)
-var anotherPinyinTones = require('pinyin-tone/v2');
-
-// ES Module usage (breaking change in version 2.3.0)
-import anotherPinyinTones from 'pinyin-tone/v2';
-
-console.log(anotherPinyinTones('qi3 lai2 bu2 yuan4 zuo4 nu2 li4 de ren2 men'));
-// -> 'qǐ lái bú yuàn zuò nú lì de rén men'
-
-console.log(anotherPinyinTones('huar1 wei4 shen2 me zhe4 yang4 hong2'));
-// -> 'huār wèi shén me zhè yàng hóng'
+// Erhua — number-r format
+toPinyinTones('hua1r ren2r', { erhua: 'number-r' })  // → 'huār rénr'
 ```
 
-## Usage: convert unspaced syllables string to unspaced pinyin string (since v2.4.0)
+### `fromPinyinTones(input, options?)` — diacritics → numbered
 
-```javascript
-import { convertUnspacedPinyin } from 'pinyin-tone/v2'; // since v2.4.0
+```js
+fromPinyinTones('chū yīn wèi lái')          // → 'chu1 yin1 wei4 lai2'
+fromPinyinTones('xún yīn liú gē')           // → 'xun2 yin1 liu2 ge1'
+fromPinyinTones('ān ǘn ǒng uèn')            // → 'an1 vn2 ong3 uen4'
 
-console.log(convertUnspacedPinyin('han4yu3pin1yin1')); // hànyǔpīnyīn
-console.log(convertUnspacedPinyin('han4 yu3pin1yin1')); // hànyǔpīnyīn
-console.log(convertUnspacedPinyin('han4 yu3  pin1   yin1')); // hànyǔpīnyīn
+// Erhua — r-number output (default)
+fromPinyinTones('huār rénr shuǐr yuèr')     // → 'huar1 renr2 shuir3 yuer4'
 
-// always add a space or a `0` between two syllables if the first syllable does not end with a tone number
-console.log(convertUnspacedPinyin('hanyu3pin1yin1')); // hanyu3pīnyīn
-// like this
-console.log(convertUnspacedPinyin('han yu3pin1yin1')); // hanyǔpīnyīn
-// or this
-console.log(convertUnspacedPinyin('han0yu3pin1yin1')); // hanyǔpīnyīn
+// Erhua — number-r output
+fromPinyinTones('huār rénr', { erhua: 'number-r' })  // → 'hua1r ren2r'
 ```
 
-## Contributors
+Neutral-tone syllables (no diacritic marks) are passed through unchanged without a number suffix.
 
-![Contributors](CONTRIBUTORS.svg "Contributors")
+### Options
 
-## Contributing
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `erhua` | `'r-number' \| 'number-r'` | `'r-number'` | Position of the tone digit relative to the erhua `r`. `'r-number'` → `huar1`; `'number-r'` → `hua1r`. |
 
-If you find any bugs, glitches, or have feature requests, please [submit them here](https://github.com/mrchenguozheng/pinyin-tone/issues). Thank you!
+### `splitUnspacedSyllables(text)` — insert spaces after tone digits
 
-## Changelog
+```js
+splitUnspacedSyllables('han4yu3pin1yin1')  // → 'han4 yu3 pin1 yin1'
+```
 
-For update history, see the [CHANGELOG here](https://github.com/mrchenguozheng/pinyin-tone/blob/master/CHANGELOG.md).
+### `convertUnspacedPinyin(input)` — unspaced numbered → unspaced diacritics
 
-## Tests
+```js
+convertUnspacedPinyin('han4yu3pin1yin1')  // → 'hànyǔpīnyīn'
+convertUnspacedPinyin('han4 yu3pin1yin1') // → 'hànyǔpīnyīn'
+```
 
-see `test/*.js`.
+### `markSinglePinyinVowel(input)` — mark a single vowel
 
-Tests have been rewritten. — 2025-03-16
+Marks a single vowel character (`a o e i u v`) with a tone number (0–4).
+
+```js
+markSinglePinyinVowel('a1')  // → 'ā'
+markSinglePinyinVowel('v3')  // → 'ǚ'   (v is the ASCII alias for ü)
+markSinglePinyinVowel('u4')  // → 'ù'
+```
+
+## Notes
+
+- `v` is used as the ASCII alias for `ü` in numbered input/output (e.g. `vn2` → `ǘn`).
+- Non-pinyin tokens are passed through unchanged.
+- The package is ESM-only.
 
 ## License
 
-MIT
-
-## About 汉语拼音方案(hàn yǔ pīn yīn fāng àn)
-
-You can find the official document [汉语拼音方案.pdf] at <http://www.moe.gov.cn/jyb_sjzl/ziliao/A19/195802/t19580201_186000.html>
-
-[汉语拼音方案.pdf]:http://www.moe.gov.cn/ewebeditor/uploadfile/2015/03/02/20150302165814246.pdf
+MIT © [Leon Si](https://github.com/leonsilicon)

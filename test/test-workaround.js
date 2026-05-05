@@ -1,5 +1,5 @@
-import _ from '../workaround/index.js'; // 使用 ES 模块导入
-import { expect } from 'chai'; // 导入 Chai 的 expect
+import { markSinglePinyinVowel as _ } from '../index.js';
+import { expect } from 'chai';
 
 describe('markTheVowel', () => {
 
@@ -25,7 +25,6 @@ describe('markTheVowel', () => {
         expect(_('e2')).to.eq('é')
         expect(_('e3')).to.eq('ě')
         expect(_('e4')).to.eq('è')
-        // expect(_('e5')).to.eq('ê')
 
         expect(_('i')).to.eq('i')
         expect(_('i0')).to.eq('i')
@@ -47,6 +46,15 @@ describe('markTheVowel', () => {
         expect(_('v2')).to.eq('ǘ')
         expect(_('v3')).to.eq('ǚ')
         expect(_('v4')).to.eq('ǜ')
+    });
+
+    it('tone 5 is neutral (same as tone 0) for all vowels', () => {
+        expect(_('a5')).to.eq('a')
+        expect(_('o5')).to.eq('o')
+        expect(_('e5')).to.eq('e')
+        expect(_('i5')).to.eq('i')
+        expect(_('u5')).to.eq('u')
+        expect(_('v5')).to.eq('ü')
     });
 
 });

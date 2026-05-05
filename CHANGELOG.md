@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.0.0
+
+- BREAKING: Package renamed from `pinyin-tone` to `pinyin-tone2`
+- BREAKING: Removed separate `v1` and `v2` exports; replaced with a single unified API
+- Added: `fromPinyinTones` — convert diacritic pinyin back to numbered pinyin
+- Added: `erhua` option on both `toPinyinTones` and `fromPinyinTones` — supports `'r-number'` (default, e.g. `huar1`) and `'number-r'` (e.g. `hua1r`) formats
+- Changed: `markSinglePinyinVowel`, `splitUnspacedSyllables`, and `convertUnspacedPinyin` are now exported directly from the package root
+- Changed: Dictionary files moved from `v2/` to `dict/`; `workaround/` inlined into main module
+
 更新日志
 
 All notable changes to this project will be documented in this file.
