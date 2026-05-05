@@ -2,6 +2,8 @@
 
 Convert between numbered pinyin and diacritic pinyin, in both directions.
 
+This package is adapted from the [pinyin-tone](https://github.com/mrchenguozheng/pinyin-tone) package by [@mrchenguozheng](https://github.com/mrchenguozheng)
+
 ```
 huar1  ⟺  huār
 chu1 yin1 wei4 lai2  ⟺  chū yīn wèi lái

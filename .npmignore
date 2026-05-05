@@ -1,4 +1,7 @@
 .github
+.travis.yml
+tsconfig.json
+CONTRIBUTORS.svg
 
 # Test files
 test/

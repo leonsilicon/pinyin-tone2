@@ -1,11 +1,19 @@
 # Changelog
 
-## v3.0.0
+## v1.1.0
+
+- BREAKING: Renamed `toPinyinTones` → `fromPinyinToneNumbers` (numbered → diacritics)
+- BREAKING: Renamed `fromPinyinTones` → `toPinyinToneNumbers` (diacritics → numbered)
+- BREAKING: Removed default export; all exports are now named
+- Added: `neutralToneNumber` option on `toPinyinToneNumbers` — append `'0'` or `'5'` to neutral-tone syllables in output (default `'none'`)
+- Added: Tone `5` is now accepted as the neutral tone alongside `0` in `fromPinyinToneNumbers` and `markSinglePinyinVowel`
+
+## v1.0.1
 
 - BREAKING: Package renamed from `pinyin-tone` to `pinyin-tone2`
 - BREAKING: Removed separate `v1` and `v2` exports; replaced with a single unified API
-- Added: `fromPinyinTones` — convert diacritic pinyin back to numbered pinyin
-- Added: `erhua` option on both `toPinyinTones` and `fromPinyinTones` — supports `'r-number'` (default, e.g. `huar1`) and `'number-r'` (e.g. `hua1r`) formats
+- Added: `toPinyinToneNumbers` (then named `fromPinyinTones`) — convert diacritic pinyin back to numbered pinyin
+- Added: `erhua` option on both `fromPinyinToneNumbers` and `toPinyinToneNumbers` — supports `'r-number'` (default, e.g. `huar1`) and `'number-r'` (e.g. `hua1r`) formats
 - Changed: `markSinglePinyinVowel`, `splitUnspacedSyllables`, and `convertUnspacedPinyin` are now exported directly from the package root
 - Changed: Dictionary files moved from `v2/` to `dict/`; `workaround/` inlined into main module
 
