@@ -144,6 +144,88 @@ describe('toPinyinToneNumbers (diacritics → numbered)', () => {
             expect(toPinyinToneNumbers(fromPinyinToneNumbers(input), opts)).to.equal(input);
         }
     });
+
+    it('handles precomposed toned ê (ế, ề)', () => {
+        expect(toPinyinToneNumbers('ế')).to.equal('e^2');
+        expect(toPinyinToneNumbers('ề')).to.equal('e^4');
+    });
+
+    it('handles combining-mark toned ê (ê̄, ê̌)', () => {
+        expect(toPinyinToneNumbers('ê̄')).to.equal('e^1');
+        expect(toPinyinToneNumbers('ê̌')).to.equal('e^3');
+    });
+
+    it('handles syllabic m with all tones', () => {
+        expect(toPinyinToneNumbers('m̄')).to.equal('m1');
+        expect(toPinyinToneNumbers('ḿ')).to.equal('m2');
+        expect(toPinyinToneNumbers('m̌')).to.equal('m3');
+        expect(toPinyinToneNumbers('m̀')).to.equal('m4');
+    });
+
+    it('handles syllabic n with all tones', () => {
+        expect(toPinyinToneNumbers('n̄')).to.equal('n1');
+        expect(toPinyinToneNumbers('ń')).to.equal('n2');
+        expect(toPinyinToneNumbers('ň')).to.equal('n3');
+        expect(toPinyinToneNumbers('ǹ')).to.equal('n4');
+    });
+
+    it('handles ng interjection (tone on the n)', () => {
+        expect(toPinyinToneNumbers('ńg')).to.equal('ng2');
+        expect(toPinyinToneNumbers('ňg')).to.equal('ng3');
+        expect(toPinyinToneNumbers('ǹg')).to.equal('ng4');
+    });
+
+    it('handles bare ê and m/n/ng with neutralToneNumber', () => {
+        expect(toPinyinToneNumbers('ê', { neutralToneNumber: '5' })).to.equal('e^5');
+        expect(toPinyinToneNumbers('m', { neutralToneNumber: '5' })).to.equal('m5');
+        expect(toPinyinToneNumbers('n', { neutralToneNumber: '5' })).to.equal('n5');
+        expect(toPinyinToneNumbers('ng', { neutralToneNumber: '5' })).to.equal('ng5');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Interjection round-trips: ê, m, n, ng, hm, hng
+// ---------------------------------------------------------------------------
+
+describe('interjection syllables (ê / m / n / ng / hm / hng)', () => {
+    it('round-trips ê tones', () => {
+        const cases = [['e^1', 'ê̄'], ['e^2', 'ế'], ['e^3', 'ê̌'], ['e^4', 'ề']];
+        for (const [numbered, diacritic] of cases) {
+            expect(fromPinyinToneNumbers(numbered)).to.equal(diacritic);
+            expect(toPinyinToneNumbers(diacritic)).to.equal(numbered);
+        }
+    });
+
+    it('round-trips m tones', () => {
+        const cases = [['m1', 'm̄'], ['m2', 'ḿ'], ['m3', 'm̌'], ['m4', 'm̀']];
+        for (const [numbered, diacritic] of cases) {
+            expect(fromPinyinToneNumbers(numbered)).to.equal(diacritic);
+            expect(toPinyinToneNumbers(diacritic)).to.equal(numbered);
+        }
+    });
+
+    it('round-trips n tones', () => {
+        const cases = [['n1', 'n̄'], ['n2', 'ń'], ['n3', 'ň'], ['n4', 'ǹ']];
+        for (const [numbered, diacritic] of cases) {
+            expect(fromPinyinToneNumbers(numbered)).to.equal(diacritic);
+            expect(toPinyinToneNumbers(diacritic)).to.equal(numbered);
+        }
+    });
+
+    it('round-trips ng tones', () => {
+        const cases = [['ng1', 'n̄g'], ['ng2', 'ńg'], ['ng3', 'ňg'], ['ng4', 'ǹg']];
+        for (const [numbered, diacritic] of cases) {
+            expect(fromPinyinToneNumbers(numbered)).to.equal(diacritic);
+            expect(toPinyinToneNumbers(diacritic)).to.equal(numbered);
+        }
+    });
+
+    it('handles hm and hng (tone 2 is the canonical reading)', () => {
+        expect(fromPinyinToneNumbers('hm2')).to.equal('hḿ');
+        expect(fromPinyinToneNumbers('hng2')).to.equal('hńg');
+        expect(toPinyinToneNumbers('hḿ')).to.equal('hm2');
+        expect(toPinyinToneNumbers('hńg')).to.equal('hng2');
+    });
 });
 
 // ---------------------------------------------------------------------------

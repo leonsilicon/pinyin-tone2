@@ -104,9 +104,28 @@ markSinglePinyinVowel('u4')  // → 'ù'
 markSinglePinyinVowel('a5')  // → 'a'   (neutral tone)
 ```
 
+## Interjection syllables
+
+The rare syllabic-consonant interjections (`m̄ ḿ m̌ m̀`, `n̄ ń ň ǹ`, `n̄g ńg ňg ǹg`, `hḿ`, `hńg`) and the standalone vowel `ê` (`ê̄ ế ê̌ ề`) round-trip too:
+
+```js
+toPinyinToneNumbers('ḿ')    // → 'm2'        (呒 / 嘸)
+toPinyinToneNumbers('ǹ')    // → 'n4'        (嗯)
+toPinyinToneNumbers('ňg')   // → 'ng3'       (嗯)
+toPinyinToneNumbers('ế')    // → 'e^2'       (欸)
+toPinyinToneNumbers('ê̄')    // → 'e^1'       (combining-mark form)
+
+fromPinyinToneNumbers('e^2') // → 'ế'
+fromPinyinToneNumbers('ng3') // → 'ňg'
+```
+
+`e^` is used as the ASCII alias for `ê` in numbered input/output, mirroring how `v` is used for `ü`.
+
 ## Notes
 
 - `v` is used as the ASCII alias for `ü` in numbered input/output (e.g. `vn2` → `ǘn`).
+- `e^` is used as the ASCII alias for `ê` (e.g. `e^2` → `ế`).
+- Combining-diacritic and precomposed forms (`ê̄` and `ế`, `m̄` and `ḿ`, etc.) are both accepted as input and normalised via NFC.
 - Both `0` and `5` are accepted as the neutral tone number in all functions.
 - Non-pinyin tokens are passed through unchanged.
 - The package is ESM-only.

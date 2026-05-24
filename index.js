@@ -60,7 +60,9 @@ const dict = Object.assign(
 // Matches syllable letters (allow ^ for e^ special case) + optional tone digit (0-5)
 const NUMBERED_REGEX = /^(?<syllable>[a-z^]+)(?<num>[012345]?)$/;
 
-// Maps each toned diacritic character to [normalized ASCII base, tone number]
+// Maps each toned diacritic character to [normalized ASCII base, tone number].
+// Includes precomposed forms for ê / m / n used in interjection syllables
+// (e.g. 欸 ế / ề, 呒 ḿ, 嗯 ń / ň / ǹ). For ê the ASCII base is `e^`.
 const DIACRITIC_MAP = /** @type {Record<string, [string, number]>} */ ({
     'ā': ['a', 1], 'á': ['a', 2], 'ǎ': ['a', 3], 'à': ['a', 4],
     'ē': ['e', 1], 'é': ['e', 2], 'ě': ['e', 3], 'è': ['e', 4],
@@ -68,7 +70,27 @@ const DIACRITIC_MAP = /** @type {Record<string, [string, number]>} */ ({
     'ō': ['o', 1], 'ó': ['o', 2], 'ǒ': ['o', 3], 'ò': ['o', 4],
     'ū': ['u', 1], 'ú': ['u', 2], 'ǔ': ['u', 3], 'ù': ['u', 4],
     'ǖ': ['v', 1], 'ǘ': ['v', 2], 'ǚ': ['v', 3], 'ǜ': ['v', 4],
+    // ê precomposed with acute/grave
+    'ế': ['e^', 2], 'ề': ['e^', 4],
+    // m / n precomposed with acute (no precomposed forms exist for tone 1/3/4
+    // on m or tone 1 on n — those use combining marks handled separately).
+    'ḿ': ['m', 2],
+    'ń': ['n', 2], 'ň': ['n', 3], 'ǹ': ['n', 4],
 });
+
+// Combining diacritics used on ê / m / n where no precomposed codepoint
+// exists. Mapped to the tone number they encode.
+const COMBINING_TONE_MAP = /** @type {Record<string, number>} */ ({
+    '̄': 1, // combining macron       -> tone 1
+    '́': 2, // combining acute accent -> tone 2
+    '̌': 3, // combining caron        -> tone 3
+    '̀': 4, // combining grave accent -> tone 4
+});
+
+// Matches a base letter (ê, m, or n) immediately followed by a combining
+// tone diacritic. Used to normalize NFC-decomposed sequences before the
+// per-character pass scans for precomposed toned letters.
+const COMBINING_TONE_REGEX = /([êmn])([̄́̌̀])/u;
 
 /**
  * Convert space-separated diacritic pinyin to numbered pinyin.
@@ -86,23 +108,38 @@ const DIACRITIC_MAP = /** @type {Record<string, [string, number]>} */ ({
 function toPinyinToneNumbers(input, options = {}) {
     const erhua = options.erhua ?? 'r-number';
     const neutralToneNumber = options.neutralToneNumber ?? 'none';
-    return input.trim().split(' ').map((syllable) => {
+    return input.trim().split(' ').map((rawSyllable) => {
+        const syllable = rawSyllable.normalize('NFC');
         let tone = 0;
         let normalized = syllable;
 
-        // Locate and extract the single toned diacritic vowel in the syllable
-        for (const char of syllable) {
-            const entry = DIACRITIC_MAP[char];
-            if (entry !== undefined) {
-                const [base, t] = entry;
-                tone = t;
-                normalized = normalized.replace(char, base);
-                break; // only one toned vowel per syllable
+        // First, fold NFC-decomposed toned ê/m/n into their ASCII bases.
+        // These have no precomposed codepoint for some tones (e.g. m̄, m̌, m̀,
+        // n̄, ê̄, ê̌), so the dict and DIACRITIC_MAP can't catch them in the
+        // per-char loop below.
+        const combiningMatch = COMBINING_TONE_REGEX.exec(normalized);
+        if (combiningMatch !== null) {
+            const base = combiningMatch[1] === 'ê' ? 'e^' : combiningMatch[1];
+            tone = COMBINING_TONE_MAP[combiningMatch[2]];
+            normalized = normalized.replace(COMBINING_TONE_REGEX, base);
+        }
+
+        // Locate and extract the single toned diacritic vowel in the syllable.
+        // Skipped if we already handled a combining-mark form above.
+        if (tone === 0) {
+            for (const char of normalized) {
+                const entry = DIACRITIC_MAP[char];
+                if (entry !== undefined) {
+                    const [base, t] = entry;
+                    tone = t;
+                    normalized = normalized.replace(char, base);
+                    break; // only one toned vowel per syllable
+                }
             }
         }
 
-        // Replace ü (bare, tone-0 ü character) with its ASCII alias v
-        normalized = normalized.replace(/ü/g, 'v');
+        // Replace ü with its ASCII alias v, and bare ê with e^.
+        normalized = normalized.replace(/ü/g, 'v').replace(/ê/g, 'e^');
 
         // Nothing changed and no tone found — could be a neutral-tone pinyin syllable
         // or a non-pinyin token. Check the dict to distinguish.
@@ -110,7 +147,7 @@ function toPinyinToneNumbers(input, options = {}) {
             if (neutralToneNumber !== 'none' && dict[normalized]) {
                 return normalized + neutralToneNumber;
             }
-            return syllable;
+            return rawSyllable;
         }
 
         const toneStr = tone === 0
