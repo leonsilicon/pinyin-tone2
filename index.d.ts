@@ -40,11 +40,15 @@ export declare function toPinyinToneNumbers(input: string, options?: PinyinTones
  *
  * Both `0` and `5` are accepted as the neutral tone (no diacritic applied).
  *
+ * The legacy ASCII `u:` spelling for `ü` is accepted on input, so `nu:3`
+ * parses the same as `nv3` → `nǚ`.
+ *
  * @example
  * fromPinyinToneNumbers('chu1 yin1 wei4 lai2') // → 'chū yīn wèi lái'
  * fromPinyinToneNumbers('huar1')               // → 'huār'  (r-number, default)
  * fromPinyinToneNumbers('hua1r', { erhua: 'number-r' }) // → 'huār'
  * fromPinyinToneNumbers('ma5') // → 'ma'  (neutral tone)
+ * fromPinyinToneNumbers('nu:3') // → 'nǚ'  (u: is the ASCII form of ü)
  */
 export declare function fromPinyinToneNumbers(input: string, options?: PinyinTonesOptions): string;
 
@@ -76,3 +80,28 @@ export declare function convertUnspacedPinyin(input: string): string;
  * markSinglePinyinVowel('a5') // → 'a'  (neutral tone)
  */
 export declare function markSinglePinyinVowel(input: string): string;
+
+/**
+ * The ASCII base letter and tone number of a single pinyin vowel character.
+ * `tone` is `0` for neutral / no tone mark.
+ */
+export interface DiacriticVowel {
+    /** ASCII base letter (`ü`/`Ü` and its toned forms map to `'v'`, `ê` to `'e^'`). */
+    letter: string;
+    /** Tone number 1–4, or `0` for a bare vowel / neutral tone. */
+    tone: number;
+}
+
+/**
+ * Parse a single pinyin vowel character — toned (`á`, `ǚ`), bare diacritic
+ * (`ü`, `ê`), or plain ASCII (`a`, `v`) — into its ASCII base letter and tone
+ * number. `ü` (and its toned forms) map to the `v` alias used throughout this
+ * library. Unknown characters are returned as `letter` with `tone: 0`.
+ *
+ * @example
+ * parseDiacriticVowel('á') // → { letter: 'a', tone: 2 }
+ * parseDiacriticVowel('ǚ') // → { letter: 'v', tone: 3 }
+ * parseDiacriticVowel('ü') // → { letter: 'v', tone: 0 }
+ * parseDiacriticVowel('a') // → { letter: 'a', tone: 0 }
+ */
+export declare function parseDiacriticVowel(char: string): DiacriticVowel;

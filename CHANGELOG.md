@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.2.0
 
 - Added: Support for rare interjection syllables `m̄ ḿ m̌ m̀`, `n̄ ń ň ǹ`, `n̄g ńg ňg ǹg`, `hḿ`, `hńg` and the standalone vowel `ê` (`ê̄ ế ê̌ ề`) in both `toPinyinToneNumbers` and `fromPinyinToneNumbers`. `e^` is used as the ASCII alias for `ê` in numbered form (e.g. `e^2` ⟷ `ế`).
 - Added: NFC normalization on `toPinyinToneNumbers` input, so combining-mark forms (`ê̄`, `m̄`, `n̄`, …) are handled alongside precomposed codepoints.

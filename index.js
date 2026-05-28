@@ -184,10 +184,13 @@ function toPinyinToneNumbers(input, options = {}) {
 function fromPinyinToneNumbers(input, options = {}) {
     const erhua = options.erhua ?? 'r-number';
     return input.trim().split(' ').map((str) => {
-        let normalized = str;
+        // Accept the legacy ASCII "u:" spelling for ü (e.g. `nu:3`, `lu:e4`)
+        // by folding the colon form into the canonical `v` alias the dict is
+        // keyed on.
+        let normalized = str.replace(/u:/g, 'v');
         // Normalize number-r erhua (e.g. hua1r) to r-number (huar1) before lookup
         if (erhua === 'number-r') {
-            normalized = str.replace(/^([a-z]+)([0-5])(r)$/, '$1r$2');
+            normalized = normalized.replace(/^([a-z]+)([0-5])(r)$/, '$1r$2');
         }
         const match = NUMBERED_REGEX.exec(normalized);
         if (match && dict[match.groups.syllable]) {
@@ -248,4 +251,38 @@ function markSinglePinyinVowel(input) {
     return SINGLE_VOWEL_DICT[input] ?? input;
 }
 
-export { toPinyinToneNumbers, fromPinyinToneNumbers, splitUnspacedSyllables, convertUnspacedPinyin, markSinglePinyinVowel };
+// ---------------------------------------------------------------------------
+// parseDiacriticVowel
+// ---------------------------------------------------------------------------
+
+// Toneless diacritic vowels (and ü) that carry no tone mark. Mapped to their
+// ASCII base. `ü`/`Ü` fold to `v`, the canonical alias used elsewhere.
+const TONELESS_DIACRITIC_MAP = /** @type {Record<string, string>} */ ({
+    'ü': 'v', 'Ü': 'v', 'ê': 'e^',
+});
+
+/**
+ * Parse a single pinyin vowel character — toned (`á`, `ǚ`), bare diacritic
+ * (`ü`, `ê`), or plain ASCII (`a`, `v`) — into its ASCII base letter and tone
+ * number. Tone 0 means neutral / no tone mark. `ü` (and its toned forms) map
+ * to the `v` alias used throughout this library.
+ *
+ * Returns the input as the `letter` with `tone: 0` if it is not a recognised
+ * vowel, so callers can pass through unknown characters safely.
+ *
+ * @param {string} char - a single character, e.g. `'á'`, `'ǚ'`, `'ü'`, `'a'`
+ * @returns {{ letter: string, tone: number }}
+ */
+function parseDiacriticVowel(char) {
+    const toned = DIACRITIC_MAP[char];
+    if (toned !== undefined) {
+        return { letter: toned[0], tone: toned[1] };
+    }
+    const toneless = TONELESS_DIACRITIC_MAP[char];
+    if (toneless !== undefined) {
+        return { letter: toneless, tone: 0 };
+    }
+    return { letter: char, tone: 0 };
+}
+
+export { toPinyinToneNumbers, fromPinyinToneNumbers, splitUnspacedSyllables, convertUnspacedPinyin, markSinglePinyinVowel, parseDiacriticVowel };

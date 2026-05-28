@@ -5,6 +5,7 @@ import {
     fromPinyinToneNumbers,
     splitUnspacedSyllables,
     convertUnspacedPinyin,
+    parseDiacriticVowel,
 } from '../index.js';
 
 // ---------------------------------------------------------------------------
@@ -52,6 +53,21 @@ describe('fromPinyinToneNumbers (numbered → diacritics)', () => {
         expect(fromPinyinToneNumbers('han5')).to.equal('han');
         expect(fromPinyinToneNumbers('ge5')).to.equal('ge');
         expect(fromPinyinToneNumbers('ma5 chu1')).to.equal('ma chū');
+    });
+
+    it('accepts the ASCII u: form for ü (same as v)', () => {
+        expect(fromPinyinToneNumbers('nu:3')).to.equal('nǚ');
+        expect(fromPinyinToneNumbers('lu:e4')).to.equal('lüè');
+        expect(fromPinyinToneNumbers('nu:2')).to.equal('nǘ');
+        expect(fromPinyinToneNumbers('lu:3')).to.equal('lǚ');
+        // matches the canonical v alias exactly
+        expect(fromPinyinToneNumbers('nu:3')).to.equal(fromPinyinToneNumbers('nv3'));
+        expect(fromPinyinToneNumbers('lu:e4')).to.equal(fromPinyinToneNumbers('lve4'));
+    });
+
+    it('accepts u: form inside multi-syllable and number-r input', () => {
+        expect(fromPinyinToneNumbers('nu:3 hai2')).to.equal('nǚ hái');
+        expect(fromPinyinToneNumbers('lu:e4', { erhua: 'number-r' })).to.equal('lüè');
     });
 });
 
@@ -251,5 +267,42 @@ describe('convertUnspacedPinyin', () => {
         expect(convertUnspacedPinyin('han yu3pin1yin1')).to.equal('hanyǔpīnyīn');
         expect(convertUnspacedPinyin('hanyu3pin1yin1')).to.equal('hanyu3pīnyīn');
         expect(convertUnspacedPinyin('han5yu3pin1yin1')).to.equal('hanyǔpīnyīn');
+        expect(convertUnspacedPinyin('nu:3hai2')).to.equal('nǚhái');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// parseDiacriticVowel — single diacritic character → { letter, tone }
+// ---------------------------------------------------------------------------
+
+describe('parseDiacriticVowel', () => {
+    it('parses toned vowels to ASCII base + tone number', () => {
+        expect(parseDiacriticVowel('á')).to.deep.equal({ letter: 'a', tone: 2 });
+        expect(parseDiacriticVowel('à')).to.deep.equal({ letter: 'a', tone: 4 });
+        expect(parseDiacriticVowel('ǎ')).to.deep.equal({ letter: 'a', tone: 3 });
+        expect(parseDiacriticVowel('ā')).to.deep.equal({ letter: 'a', tone: 1 });
+        expect(parseDiacriticVowel('é')).to.deep.equal({ letter: 'e', tone: 2 });
+        expect(parseDiacriticVowel('ǐ')).to.deep.equal({ letter: 'i', tone: 3 });
+        expect(parseDiacriticVowel('ò')).to.deep.equal({ letter: 'o', tone: 4 });
+        expect(parseDiacriticVowel('ū')).to.deep.equal({ letter: 'u', tone: 1 });
+    });
+
+    it('maps ü and its toned forms to the v alias', () => {
+        expect(parseDiacriticVowel('ü')).to.deep.equal({ letter: 'v', tone: 0 });
+        expect(parseDiacriticVowel('ǖ')).to.deep.equal({ letter: 'v', tone: 1 });
+        expect(parseDiacriticVowel('ǘ')).to.deep.equal({ letter: 'v', tone: 2 });
+        expect(parseDiacriticVowel('ǚ')).to.deep.equal({ letter: 'v', tone: 3 });
+        expect(parseDiacriticVowel('ǜ')).to.deep.equal({ letter: 'v', tone: 4 });
+    });
+
+    it('returns bare/plain vowels with tone 0', () => {
+        expect(parseDiacriticVowel('a')).to.deep.equal({ letter: 'a', tone: 0 });
+        expect(parseDiacriticVowel('v')).to.deep.equal({ letter: 'v', tone: 0 });
+        expect(parseDiacriticVowel('ê')).to.deep.equal({ letter: 'e^', tone: 0 });
+    });
+
+    it('passes through unknown characters as letter with tone 0', () => {
+        expect(parseDiacriticVowel('b')).to.deep.equal({ letter: 'b', tone: 0 });
+        expect(parseDiacriticVowel('!')).to.deep.equal({ letter: '!', tone: 0 });
     });
 });

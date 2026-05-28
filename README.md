@@ -24,6 +24,7 @@ import {
     splitUnspacedSyllables,
     convertUnspacedPinyin,
     markSinglePinyinVowel,
+    parseDiacriticVowel,
 } from 'pinyin-tone2';
 ```
 
@@ -38,6 +39,8 @@ fromPinyinToneNumbers('an1 vn2 ong3 uen4')          // → 'ān ǘn ǒng uèn'
 fromPinyinToneNumbers('b p m f')                    // → 'b p m f'
 fromPinyinToneNumbers('ma0')                        // → 'ma'  (neutral tone)
 fromPinyinToneNumbers('ma5')                        // → 'ma'  (neutral tone)
+fromPinyinToneNumbers('nu:3')                       // → 'nǚ'  (u: is the ASCII form of ü)
+fromPinyinToneNumbers('lu:e4')                       // → 'lüè'
 
 // Erhua — r-number format (default)
 fromPinyinToneNumbers('huar1 renr2 shuir3 yuer4')   // → 'huār rénr shuǐr yuèr'
@@ -104,6 +107,22 @@ markSinglePinyinVowel('u4')  // → 'ù'
 markSinglePinyinVowel('a5')  // → 'a'   (neutral tone)
 ```
 
+### `parseDiacriticVowel(char)` — single diacritic char → `{ letter, tone }`
+
+Parses a single pinyin vowel character — toned (`á`, `ǚ`), bare diacritic
+(`ü`, `ê`), or plain ASCII (`a`, `v`) — into its ASCII base letter and tone
+number, so you don't have to hardcode a lookup table in your own app. `tone`
+is `0` for a bare vowel / neutral tone, and `ü` (with its toned forms) maps to
+the `v` alias used throughout this library. Unknown characters are returned as
+`letter` with `tone: 0`.
+
+```js
+parseDiacriticVowel('á')  // → { letter: 'a', tone: 2 }
+parseDiacriticVowel('ǚ')  // → { letter: 'v', tone: 3 }
+parseDiacriticVowel('ü')  // → { letter: 'v', tone: 0 }
+parseDiacriticVowel('a')  // → { letter: 'a', tone: 0 }
+```
+
 ## Interjection syllables
 
 The rare syllabic-consonant interjections (`m̄ ḿ m̌ m̀`, `n̄ ń ň ǹ`, `n̄g ńg ňg ǹg`, `hḿ`, `hńg`) and the standalone vowel `ê` (`ê̄ ế ê̌ ề`) round-trip too:
@@ -123,7 +142,7 @@ fromPinyinToneNumbers('ng3') // → 'ňg'
 
 ## Notes
 
-- `v` is used as the ASCII alias for `ü` in numbered input/output (e.g. `vn2` → `ǘn`).
+- `v` is used as the ASCII alias for `ü` in numbered input/output (e.g. `vn2` → `ǘn`). The legacy `u:` colon spelling is also accepted on input (e.g. `nu:3` → `nǚ`).
 - `e^` is used as the ASCII alias for `ê` (e.g. `e^2` → `ế`).
 - Combining-diacritic and precomposed forms (`ê̄` and `ế`, `m̄` and `ḿ`, etc.) are both accepted as input and normalised via NFC.
 - Both `0` and `5` are accepted as the neutral tone number in all functions.
