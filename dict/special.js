@@ -22,4 +22,9 @@ export default {
     // common dictionaries; tone-2 is the canonical reading)
     hm: ['hm', 'hm', 'hḿ', 'hm', 'hm'],
     hng: ['hng', 'hng', 'hńg', 'hng', 'hng'],
+
+    // Standalone erhua final 儿 (CC-CEDICT `r5`). It only occurs as a
+    // neutral-tone suffix particle and carries no tone mark, so every tone
+    // slot folds to bare `r`.
+    r: ['r', 'r', 'r', 'r', 'r'],
 };

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.1
+
+- Fixed: the standalone erhua final `r` (儿 as a suffix particle, CC-CEDICT `r5`) now converts correctly — `fromPinyinToneNumbers('r5')` returns `'r'` instead of passing the input through unchanged. It also round-trips via `toPinyinToneNumbers('r', { neutralToneNumber: '5' })` → `'r5'`.
+
 ## v1.2.0
 
 - Added: Support for rare interjection syllables `m̄ ḿ m̌ m̀`, `n̄ ń ň ǹ`, `n̄g ńg ňg ǹg`, `hḿ`, `hńg` and the standalone vowel `ê` (`ê̄ ế ê̌ ề`) in both `toPinyinToneNumbers` and `fromPinyinToneNumbers`. `e^` is used as the ASCII alias for `ê` in numbered form (e.g. `e^2` ⟷ `ế`).

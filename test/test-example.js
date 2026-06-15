@@ -55,6 +55,13 @@ describe('fromPinyinToneNumbers (numbered → diacritics)', () => {
         expect(fromPinyinToneNumbers('ma5 chu1')).to.equal('ma chū');
     });
 
+    it('standalone erhua final r (儿, CC-CEDICT r5) has no tone mark', () => {
+        expect(fromPinyinToneNumbers('r5')).to.equal('r');
+        expect(fromPinyinToneNumbers('r0')).to.equal('r');
+        expect(fromPinyinToneNumbers('r')).to.equal('r');
+        expect(fromPinyinToneNumbers('er2 r5')).to.equal('ér r');
+    });
+
     it('accepts the ASCII u: form for ü (same as v)', () => {
         expect(fromPinyinToneNumbers('nu:3')).to.equal('nǚ');
         expect(fromPinyinToneNumbers('lu:e4')).to.equal('lüè');
@@ -122,6 +129,12 @@ describe('toPinyinToneNumbers (diacritics → numbered)', () => {
 
     it('erhua number-r format: huār → hua1r', () => {
         expect(toPinyinToneNumbers('huār rénr shuǐr yuèr', { erhua: 'number-r' })).to.equal('hua1r ren2r shui3r yue4r');
+    });
+
+    it('standalone erhua final r round-trips to numbered r5/r0', () => {
+        expect(toPinyinToneNumbers('r', { neutralToneNumber: '5' })).to.equal('r5');
+        expect(toPinyinToneNumbers('r', { neutralToneNumber: '0' })).to.equal('r0');
+        expect(toPinyinToneNumbers('ér r', { neutralToneNumber: '5' })).to.equal('er2 r5');
     });
 
     it('ü diacritic forms round-trip to v-based numbered form', () => {
